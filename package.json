@@ -1,0 +1,36 @@
+{
+  "name": "policypilot",
+  "version": "1.0.0",
+  "description": "AI-powered insurance policy assistant with FastAPI backend and React frontend",
+  "private": true,
+  "scripts": {
+    "dev": "./start-dev.sh",
+    "backend": "cd backend && source venv/bin/activate && uvicorn app.api:app --reload --host 0.0.0.0 --port 8000",
+    "frontend": "cd frontend && npm start",
+    "backend:install": "cd backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
+    "frontend:install": "cd frontend && npm install",
+    "install": "npm run backend:install && npm run frontend:install",
+    "backend:test": "cd backend && source venv/bin/activate && python -m pytest",
+    "frontend:test": "cd frontend && npm test",
+    "frontend:build": "cd frontend && npm run build",
+    "clean": "rm -rf backend/venv frontend/node_modules backend/__pycache__ backend/app/__pycache__"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "keywords": [
+    "ai",
+    "insurance",
+    "fastapi",
+    "react",
+    "typescript",
+    "nlp"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  }
+}

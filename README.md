@@ -1,30 +1,103 @@
-# PolicyPilot - Document Processing API
+# PolicyPilot - AI-Powered Insurance Policy Assistant
 
-A powerful RAG (Retrieval Augmented Generation) system for processing insurance documents and answering policy-related queries using AI.
+A complete full-stack RAG (Retrieval Augmented Generation) system with FastAPI backend and React frontend for processing insurance documents and answering policy-related queries using AI.
 
-## 🚀 Quick Start for Frontend Integration
+## 🏗️ Project Structure
 
-### API Server Setup
+```
+PolicyPilot/
+├── backend/                # FastAPI Backend
+│   ├── app/
+│   │   ├── api.py         # FastAPI endpoints
+│   │   ├── ingestion.py   # Document processing
+│   │   ├── embedder.py    # Text embeddings
+│   │   ├── parser.py      # Query parsing
+│   │   ├── retriever.py   # Semantic search
+│   │   └── reasoner.py    # LLM reasoning
+│   ├── data/
+│   │   ├── documents/     # Upload documents here
+│   │   └── embeddings/    # Vector storage
+│   ├── venv/              # Python virtual environment
+│   ├── config.py          # System configuration
+│   ├── main.py            # CLI interface
+│   ├── requirements.txt   # Python dependencies
+│   └── .env               # Environment variables
+├── frontend/               # React Frontend
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── App.tsx        # Main App component
+│   │   └── index.tsx      # Entry point
+│   ├── public/            # Static assets
+│   ├── package.json       # Node.js dependencies
+│   └── tsconfig.json      # TypeScript config
+├── start-dev.sh           # Development startup script
+└── package.json           # Root package.json
+```
 
-1. **Install Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 🚀 Quick Start
 
-2. **Configure Environment**:
-   ```bash
-   cp .env.template .env
-   # Edit .env with your OpenAI API key (optional for basic functionality)
-   ```
+### Option 1: One-Command Setup (Recommended)
+```bash
+# Install all dependencies and start both services
+npm run install
+npm run dev
+```
 
-3. **Start the API Server**:
-   ```bash
-   python -m uvicorn app.api:app --reload --host 0.0.0.0 --port 8000
-   ```
+This will:
+- Set up the Python virtual environment in `backend/`
+- Install all Python dependencies
+- Install all Node.js dependencies in `frontend/`
+- Start both backend (port 8000) and frontend (port 3000)
 
-4. **Access API Documentation**:
-   - Interactive Docs: http://localhost:8000/docs
-   - ReDoc: http://localhost:8000/redoc
+### Option 2: Manual Setup
+
+#### Backend Setup
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+#### Frontend Setup
+```bash
+cd frontend
+npm install
+```
+
+#### Start Services
+```bash
+# Terminal 1 - Backend
+cd backend
+source venv/bin/activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Terminal 2 - Frontend
+cd frontend
+npm start
+```
+
+## 🌐 Access the Application
+
+After starting:
+- **Frontend UI**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+## 📋 Available Scripts
+
+From the root directory:
+```bash
+npm run dev              # Start both backend and frontend
+npm run backend          # Start only backend
+npm run frontend         # Start only frontend
+npm run backend:install  # Install Python dependencies
+npm run frontend:install # Install Node.js dependencies
+npm run install          # Install all dependencies
+npm run frontend:build   # Build frontend for production
+npm run clean            # Clean all dependencies and cache
+```
 
 ## 📡 API Endpoints
 
