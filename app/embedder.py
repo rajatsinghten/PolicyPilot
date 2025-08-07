@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 import numpy as np
 
-import openai
+from openai import AzureOpenAI, OpenAI
 from sentence_transformers import SentenceTransformer
 from loguru import logger
 
@@ -49,10 +49,18 @@ class EmbeddingGenerator:
         """Initialize the embedding model."""
         try:
             if self.model_type == "openai":
-                if not config.OPENAI_API_KEY:
-                    raise ValueError("OpenAI API key not found in environment variables")
-                openai.api_key = config.OPENAI_API_KEY
-                self.model = openai  # We'll use the client directly
+                # Check for Azure OpenAI configuration first
+                if config.AZURE_OPENAI_API_KEY and config.AZURE_OPENAI_ENDPOINT:
+                    self.client = AzureOpenAI(
+                        api_key=config.AZURE_OPENAI_API_KEY,
+                        api_version=config.AZURE_OPENAI_API_VERSION,
+                        azure_endpoint=config.AZURE_OPENAI_ENDPOINT
+                    )
+                elif config.OPENAI_API_KEY:
+                    # Fallback to regular OpenAI
+                    self.client = OpenAI(api_key=config.OPENAI_API_KEY)
+                else:
+                    raise ValueError("Neither Azure OpenAI nor OpenAI API key found in environment variables")
                 
             elif self.model_type == "huggingface":
                 self.model = SentenceTransformer(self.model_name)
@@ -73,7 +81,7 @@ class EmbeddingGenerator:
         """
         try:
             if self.model_type == "openai":
-                response = openai.embeddings.create(
+                response = self.client.embeddings.create(
                     model=self.model_name,
                     input=text
                 )
@@ -106,7 +114,7 @@ class EmbeddingGenerator:
             
             try:
                 if self.model_type == "openai":
-                    response = openai.embeddings.create(
+                    response = self.client.embeddings.create(
                         model=self.model_name,
                         input=batch
                     )

@@ -10,7 +10,7 @@ from typing import List, Tuple, Dict, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
 
-import openai
+from openai import AzureOpenAI
 from loguru import logger
 
 import config
@@ -80,20 +80,62 @@ class ReasoningResult:
 class LLMReasoner:
     """Handles LLM-based reasoning and decision making."""
     
-    def __init__(self, model_name: str = config.OPENAI_MODEL):
+    def __init__(self, model_name: str = config.AZURE_OPENAI_DEPLOYMENT_NAME):
         """
         Initialize the LLM reasoner.
         
         Args:
-            model_name: Name of the OpenAI model to use
+            model_name: Name of the Azure OpenAI deployment to use
         """
         self.model_name = model_name
         
-        if not config.OPENAI_API_KEY:
-            raise ValueError("OpenAI API key not found in environment variables")
+        # Check for Azure OpenAI configuration first
+        if config.AZURE_OPENAI_API_KEY and config.AZURE_OPENAI_ENDPOINT:
+            self.client = AzureOpenAI(
+                api_key=config.AZURE_OPENAI_API_KEY,
+                api_version=config.AZURE_OPENAI_API_VERSION,
+                azure_endpoint=config.AZURE_OPENAI_ENDPOINT
+            )
+            logger.info(f"Initialized LLMReasoner with Azure OpenAI deployment: {model_name}")
+        elif config.OPENAI_API_KEY:
+            # Fallback to regular OpenAI
+            from openai import OpenAI
+            self.client = OpenAI(api_key=config.OPENAI_API_KEY)
+            logger.info(f"Initialized LLMReasoner with OpenAI model: {model_name}")
+        else:
+            raise ValueError("Neither Azure OpenAI nor OpenAI API key found in environment variables")
+    
+    def _parse_decision(self, decision_str: str) -> Decision:
+        """
+        Safely parse decision from LLM response.
         
-        openai.api_key = config.OPENAI_API_KEY
-        logger.info(f"Initialized LLMReasoner with model: {model_name}")
+        Args:
+            decision_str: Decision string from LLM
+            
+        Returns:
+            Decision enum value
+        """
+        decision_str = decision_str.strip().upper()
+        
+        # Map possible LLM responses to enum values
+        decision_mapping = {
+            "APPROVED": Decision.APPROVED,
+            "REJECTED": Decision.REJECTED,
+            "PENDING": Decision.PENDING,
+            "INSUFFICIENT_INFO": Decision.INSUFFICIENT_INFO,
+            "INSUFFICIENT INFORMATION": Decision.INSUFFICIENT_INFO,
+            "INSUFFICIENT": Decision.INSUFFICIENT_INFO
+        }
+        
+        if decision_str in decision_mapping:
+            return decision_mapping[decision_str]
+        
+        # If we can't map it, try to create by name
+        try:
+            return Decision[decision_str]
+        except KeyError:
+            logger.warning(f"Unknown decision value: {decision_str}, defaulting to PENDING")
+            return Decision.PENDING
     
     def create_decision_prompt(
         self, 
@@ -199,8 +241,8 @@ Respond only with valid JSON:
             # Create the prompt
             prompt = self.create_decision_prompt(parsed_query, context, retrieved_chunks)
             
-            # Call OpenAI API
-            response = openai.chat.completions.create(
+            # Call Azure OpenAI API
+            response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
                     {
@@ -222,7 +264,7 @@ Respond only with valid JSON:
             
             # Create ReasoningResult object
             result = ReasoningResult(
-                decision=Decision(result_data["decision"]),
+                decision=self._parse_decision(result_data["decision"]),
                 amount=result_data.get("amount"),
                 confidence=result_data.get("confidence", 0.0),
                 reasoning=result_data.get("reasoning", ""),

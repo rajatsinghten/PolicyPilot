@@ -45,12 +45,12 @@ class PolicyPilot:
             embedding_model_type: Type of embedding model ("openai" or "huggingface")
             use_llm_reasoning: Whether to use LLM for reasoning (auto-detected if None)
         """
-        # Auto-detect OpenAI availability
+        # Auto-detect Azure OpenAI or OpenAI availability
         if use_openai is None:
-            use_openai = bool(config.OPENAI_API_KEY)
+            use_openai = bool(config.AZURE_OPENAI_API_KEY or config.OPENAI_API_KEY)
         
         if use_llm_reasoning is None:
-            use_llm_reasoning = bool(config.OPENAI_API_KEY)
+            use_llm_reasoning = bool(config.AZURE_OPENAI_API_KEY or config.OPENAI_API_KEY)
         
         # Determine embedding model type
         if use_openai and embedding_model_type == "openai":
@@ -62,7 +62,7 @@ class PolicyPilot:
         self.use_llm_reasoning = use_llm_reasoning
         
         logger.info(f"Initializing PolicyPilot:")
-        logger.info(f"  - OpenAI embeddings: {use_openai}")
+        logger.info(f"  - Azure OpenAI/OpenAI embeddings: {use_openai}")
         logger.info(f"  - Embedding model: {embedding_model_type}")
         logger.info(f"  - LLM reasoning: {use_llm_reasoning}")
         

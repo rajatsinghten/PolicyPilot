@@ -20,10 +20,16 @@ DATA_DIR.mkdir(exist_ok=True)
 DOCUMENTS_DIR.mkdir(exist_ok=True)
 EMBEDDINGS_DIR.mkdir(exist_ok=True)
 
-# OpenAI Configuration
+# Azure OpenAI Configuration
+AZURE_OPENAI_API_KEY: Optional[str] = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT: Optional[str] = os.getenv("AZURE_OPENAI_ENDPOINT") 
+AZURE_OPENAI_DEPLOYMENT_NAME: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "temp-gpt-4o-mini")
+AZURE_OPENAI_API_VERSION: str = "2025-01-01-preview"
+EMBEDDING_MODEL: str = "text-embedding-ada-002"
+
+# Legacy OpenAI Configuration (for backward compatibility)
 OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL: str = "gpt-3.5-turbo"  # Changed from gpt-4 to gpt-3.5-turbo
-EMBEDDING_MODEL: str = "text-embedding-ada-002"
 
 # Document Processing
 CHUNK_SIZE: int = 500  # tokens
