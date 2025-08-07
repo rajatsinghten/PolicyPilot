@@ -75,25 +75,25 @@ const ChatInterface: React.FC<ChatInterfaceProps> = () => {
 
 I'm your AI-powered insurance policy assistant with **enhanced context retrieval** and **integrated document management**.
 
-🔍 **What I can do:**
+ **What I can do:**
 - Analyze your insurance policies with comprehensive context
 - Find relevant coverage information with surrounding details
 - Answer questions about claims, exclusions, and benefits
 - Provide enhanced results using neighboring document sections
 
-� **Document Management:**
+**Document Management:**
 - **Upload documents directly**: Click "Upload Docs" to add PDF, DOCX, or TXT files
 - **Instant processing**: Documents are automatically processed and indexed
 - **Real-time queries**: Ask questions about uploaded documents immediately
 - **Document management**: View and delete uploaded documents as needed
 
-🚀 **Enhanced Features:**
+**Enhanced Features:**
 - **Context-Aware Search**: Complete context with neighboring document sections
 - **Drag & Drop Upload**: Easy document upload with progress tracking
 - **Live Document List**: See all your uploaded documents at a glance
 - **Smart Document Analysis**: AI-powered understanding of insurance terminology
 
-💡 **Try asking:**
+ **Try asking:**
 - "What dental treatments are covered?"
 - "What are the exclusions for pre-existing conditions?"
 - "What's the coverage for emergency procedures?"
@@ -135,14 +135,14 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
     }
 
     if (data.justification && data.justification.clauses && data.justification.clauses.length > 0) {
-      responseText += `**📄 Relevant Policy Information** (with neighboring context):\n\n`;
+      responseText += `**Relevant Policy Information** (with neighboring context):\n\n`;
       data.justification.clauses.forEach((clause, index) => {
         const preview = clause.text.length > 300 ? 
           clause.text.substring(0, 300) + "..." : 
           clause.text;
         
         responseText += `**${index + 1}. ${clause.source}** - *${clause.section || 'Section Unknown'}*\n`;
-        responseText += `📊 **Relevance**: ${Math.round(clause.relevance_score * 100)}%\n\n`;
+        responseText += ` **Relevance**: ${Math.round(clause.relevance_score * 100)}%\n\n`;
         responseText += `${preview}\n\n`;
         responseText += `---\n\n`;
       });

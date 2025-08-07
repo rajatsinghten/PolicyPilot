@@ -9,7 +9,7 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, onExampleQuery }) => {
   const formatMessageContent = (content: string) => {
-    // Convert markdown-style formatting to HTML
+
     return content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
