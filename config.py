@@ -4,6 +4,10 @@ Configuration settings for PolicyPilot
 import os
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Base paths
 BASE_DIR = Path(__file__).parent
@@ -18,7 +22,7 @@ EMBEDDINGS_DIR.mkdir(exist_ok=True)
 
 # OpenAI Configuration
 OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL: str = "gpt-4"
+OPENAI_MODEL: str = "gpt-3.5-turbo"  # Changed from gpt-4 to gpt-3.5-turbo
 EMBEDDING_MODEL: str = "text-embedding-ada-002"
 
 # Document Processing
@@ -32,7 +36,7 @@ FAISS_INDEX_TYPE: str = "IndexFlatIP"  # Inner Product (cosine similarity)
 
 # Retrieval
 TOP_K_RESULTS: int = 5
-SIMILARITY_THRESHOLD: float = 0.7
+SIMILARITY_THRESHOLD: float = 0.3  # Lowered for better retrieval
 
 # API Configuration
 API_HOST: str = "0.0.0.0"
