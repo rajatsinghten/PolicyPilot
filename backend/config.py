@@ -43,6 +43,8 @@ FAISS_INDEX_TYPE: str = "IndexFlatIP"  # Inner Product (cosine similarity)
 # Retrieval
 TOP_K_RESULTS: int = 5
 SIMILARITY_THRESHOLD: float = 0.3  # Lowered for better retrieval
+INCLUDE_NEIGHBORS: bool = True  # Include neighboring chunks by default
+NEIGHBOR_RANGE: int = 1  # Include ±1 neighboring chunks
 
 # API Configuration
 API_HOST: str = "0.0.0.0"

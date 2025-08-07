@@ -62,9 +62,27 @@ const ChatInterface: React.FC = () => {
     // Add welcome message
     const welcomeMessage: Message = {
       id: 'welcome',
-      content: `👋 Hello! I'm your PolicyPilot assistant. I can help you understand your insurance policies, check coverage, and answer questions about claims.
+      content: `👋 **Welcome to PolicyPilot Assistant!**
 
-Upload your policy documents using the backend API, then ask me anything!`,
+I'm your AI-powered insurance policy assistant with **enhanced context retrieval**. 
+
+🔍 **What I can do:**
+- Analyze your insurance policies with comprehensive context
+- Find relevant coverage information with surrounding details
+- Answer questions about claims, exclusions, and benefits
+- Provide enhanced results using neighboring document sections
+
+🚀 **Enhanced Features:**
+- **Context-Aware Search**: When I find relevant information, I also include surrounding text for complete context
+- **Comprehensive Coverage**: Get fuller answers with related policy sections
+- **Smart Document Analysis**: AI-powered understanding of insurance terminology
+
+💡 **Try asking:**
+- "What dental treatments are covered?"
+- "What are the exclusions for pre-existing conditions?"
+- "What's the coverage for emergency procedures?"
+
+Upload your policy documents via the backend API, then ask me anything! I'll provide detailed, contextual answers.`,
       isUser: false,
       timestamp: new Date()
     };
@@ -101,15 +119,21 @@ Upload your policy documents using the backend API, then ask me anything!`,
     }
 
     if (data.justification && data.justification.clauses && data.justification.clauses.length > 0) {
-      responseText += `**Relevant Policy Information**:\n`;
+      responseText += `**📄 Relevant Policy Information** (with neighboring context):\n\n`;
       data.justification.clauses.forEach((clause, index) => {
-        responseText += `${index + 1}. *${clause.source}*: ${clause.text.substring(0, 200)}${clause.text.length > 200 ? '...' : ''}\n`;
-        responseText += `   📊 Relevance: ${Math.round(clause.relevance_score * 100)}%\n\n`;
+        const preview = clause.text.length > 300 ? 
+          clause.text.substring(0, 300) + "..." : 
+          clause.text;
+        
+        responseText += `**${index + 1}. ${clause.source}** - *${clause.section || 'Section Unknown'}*\n`;
+        responseText += `📊 **Relevance**: ${Math.round(clause.relevance_score * 100)}%\n\n`;
+        responseText += `${preview}\n\n`;
+        responseText += `---\n\n`;
       });
     }
 
     if (data.recommendations && data.recommendations.length > 0) {
-      responseText += `**Recommendations**:\n`;
+      responseText += `**💡 Recommendations**:\n`;
       data.recommendations.forEach((rec, index) => {
         responseText += `${index + 1}. ${rec}\n`;
       });
@@ -135,7 +159,9 @@ Upload your policy documents using the backend API, then ask me anything!`,
       const response = await axios.post(`${API_BASE_URL}/process`, {
         query: query,
         use_llm_reasoning: false,
-        top_k: 5
+        top_k: 5,
+        include_neighbors: true,
+        neighbor_range: 1
       }, {
         timeout: 30000 // 30 second timeout
       });

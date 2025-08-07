@@ -85,6 +85,23 @@ After starting:
 - **API Documentation**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
+## ✨ Key Features
+
+🔍 **Semantic Search**: AI-powered document search using vector embeddings  
+🧠 **RAG Processing**: Retrieval Augmented Generation for intelligent responses  
+📄 **Multi-format Support**: PDF, DOCX, TXT document processing  
+🔗 **Neighbor-Enhanced Retrieval**: Automatically includes surrounding chunks for better context  
+⚡ **Real-time Chat Interface**: Interactive UI for natural language queries  
+🛡️ **Insurance-Focused**: Specialized for policy analysis and claims processing  
+
+### 🆕 Enhanced Context Retrieval
+
+PolicyPilot now includes **neighboring chunks** when finding relevant content:
+- When a match is found at chunk 15, also retrieves chunks 14 and 16
+- Provides complete context around relevant sections
+- Configurable neighbor range (±1, ±2, etc.)
+- Smart deduplication prevents duplicate results
+
 ## 📋 Available Scripts
 
 From the root directory:

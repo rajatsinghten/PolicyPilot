@@ -32,6 +32,8 @@ class QueryRequest(BaseModel):
     query: str
     top_k: Optional[int] = config.TOP_K_RESULTS
     use_llm_reasoning: Optional[bool] = True
+    include_neighbors: Optional[bool] = config.INCLUDE_NEIGHBORS
+    neighbor_range: Optional[int] = config.NEIGHBOR_RANGE
 
 
 class QueryResponse(BaseModel):
@@ -267,7 +269,9 @@ async def process_query(request: QueryRequest):
         # Retrieve relevant chunks
         retrieved_chunks = retriever.search_parsed_query(
             parsed_query,
-            top_k=request.top_k
+            top_k=request.top_k,
+            include_neighbors=request.include_neighbors,
+            neighbor_range=request.neighbor_range
         )
         
         if not retrieved_chunks:
@@ -311,21 +315,25 @@ async def process_query(request: QueryRequest):
             processing_time = time.time() - start_time
             
             return QueryResponse(
-                decision="Pending",
-                confidence=0.7,
-                reasoning="Retrieved relevant policy information. Manual review recommended.",
+                decision="Information Found",
+                confidence=0.8,
+                reasoning=f"Found {len(retrieved_chunks)} relevant document sections with neighboring context for comprehensive coverage.",
                 justification={
                     "clauses": [
                         {
-                            "text": chunk.text[:200] + "...",
+                            "text": chunk.text[:800] + ("..." if len(chunk.text) > 800 else ""),
                             "source": chunk.source,
-                            "section": chunk.section,
+                            "section": chunk.section or f"Section {chunk.chunk_id.split('_chunk_')[-1]}",
                             "relevance_score": score
                         }
-                        for chunk, score in retrieved_chunks[:3]
+                        for chunk, score in retrieved_chunks[:5]  # Show more results
                     ]
                 },
-                recommendations=["Manual review recommended", "Consult with policy expert"],
+                recommendations=[
+                    "Review the complete policy sections shown above",
+                    "Contact your insurance provider for specific coverage details",
+                    "Verify current policy terms and conditions"
+                ],
                 query_understanding=parsed_query.to_dict(),
                 processing_time=processing_time
             )
@@ -417,7 +425,12 @@ async def delete_document(document_name: str):
 
 
 @app.get("/search/{query}")
-async def search_documents(query: str, top_k: int = 5):
+async def search_documents(
+    query: str, 
+    top_k: int = 5, 
+    include_neighbors: bool = config.INCLUDE_NEIGHBORS,
+    neighbor_range: int = config.NEIGHBOR_RANGE
+):
     """Search documents without LLM reasoning."""
     try:
         if not retriever or not retriever.index:
@@ -427,7 +440,12 @@ async def search_documents(query: str, top_k: int = 5):
             )
         
         # Perform search
-        results = retriever.search(query, top_k=top_k)
+        results = retriever.search(
+            query, 
+            top_k=top_k, 
+            include_neighbors=include_neighbors,
+            neighbor_range=neighbor_range
+        )
         
         # Format results
         formatted_results = [

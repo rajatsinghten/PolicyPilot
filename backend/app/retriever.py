@@ -141,7 +141,9 @@ class SemanticRetriever:
         self, 
         query: str, 
         top_k: int = config.TOP_K_RESULTS,
-        threshold: float = config.SIMILARITY_THRESHOLD
+        threshold: float = config.SIMILARITY_THRESHOLD,
+        include_neighbors: bool = True,
+        neighbor_range: int = 1
     ) -> List[Tuple[DocumentChunk, float]]:
         """
         Perform semantic search for a query.
@@ -150,6 +152,8 @@ class SemanticRetriever:
             query: Query string
             top_k: Number of top results to return
             threshold: Minimum similarity threshold
+            include_neighbors: Whether to include neighboring chunks
+            neighbor_range: Number of neighboring chunks to include on each side (+-n)
             
         Returns:
             List of (DocumentChunk, similarity_score) tuples
@@ -168,24 +172,109 @@ class SemanticRetriever:
         query_embedding = query_embedding.reshape(1, -1).astype(np.float32)
         faiss.normalize_L2(query_embedding)
         
-        # Perform search
-        similarities, indices = self.index.search(query_embedding, top_k)
+        # Perform search with a larger top_k to have room for neighbor inclusion
+        search_k = min(top_k * 3, len(self.chunks))  # Search more initially
+        similarities, indices = self.index.search(query_embedding, search_k)
         
-        # Filter results by threshold and prepare return data
-        results = []
+        # Filter initial results by threshold
+        initial_results = []
         for i, (similarity, idx) in enumerate(zip(similarities[0], indices[0])):
             if similarity >= threshold and idx < len(self.chunks):
                 chunk = self.chunks[idx]
-                results.append((chunk, float(similarity)))
+                initial_results.append((chunk, float(similarity), idx))
         
-        logger.info(f"Found {len(results)} relevant chunks for query")
-        return results
+        if not include_neighbors:
+            # Return original results without neighbors
+            return [(chunk, score) for chunk, score, _ in initial_results[:top_k]]
+        
+        # Find neighboring chunks and add them
+        enhanced_results = []
+        used_chunk_ids = set()
+        
+        for chunk, original_score, original_idx in initial_results:
+            if chunk.chunk_id in used_chunk_ids:
+                continue
+                
+            # Add the original chunk
+            enhanced_results.append((chunk, original_score))
+            used_chunk_ids.add(chunk.chunk_id)
+            
+            # Find and add neighboring chunks
+            neighbors = self._find_neighboring_chunks(chunk, neighbor_range)
+            for neighbor_chunk in neighbors:
+                if neighbor_chunk.chunk_id not in used_chunk_ids:
+                    # Give neighbors a slightly lower score than the original
+                    neighbor_score = original_score * 0.8  # 80% of original score
+                    enhanced_results.append((neighbor_chunk, neighbor_score))
+                    used_chunk_ids.add(neighbor_chunk.chunk_id)
+            
+            # Stop if we have enough results
+            if len(enhanced_results) >= top_k:
+                break
+        
+        # Sort by score and limit to top_k
+        enhanced_results.sort(key=lambda x: x[1], reverse=True)
+        final_results = enhanced_results[:top_k]
+        
+        logger.info(f"Found {len(initial_results)} direct matches, expanded to {len(final_results)} with neighbors")
+        return final_results
+    
+    def _find_neighboring_chunks(
+        self, 
+        target_chunk: DocumentChunk, 
+        neighbor_range: int = 1
+    ) -> List[DocumentChunk]:
+        """
+        Find neighboring chunks based on chunk_id sequence.
+        
+        Args:
+            target_chunk: The chunk to find neighbors for
+            neighbor_range: Number of neighbors to find on each side
+            
+        Returns:
+            List of neighboring DocumentChunk objects
+        """
+        neighbors = []
+        
+        # Parse the chunk ID to extract the counter
+        # Format: {source}_chunk_{counter}
+        try:
+            chunk_id_parts = target_chunk.chunk_id.rsplit('_', 1)
+            if len(chunk_id_parts) != 2:
+                return neighbors
+                
+            base_id = chunk_id_parts[0]
+            chunk_number = int(chunk_id_parts[1])
+            
+            # Find neighboring chunks
+            for offset in range(-neighbor_range, neighbor_range + 1):
+                if offset == 0:
+                    continue  # Skip the original chunk
+                
+                neighbor_number = chunk_number + offset
+                if neighbor_number < 0:
+                    continue  # Skip negative indices
+                
+                neighbor_id = f"{base_id}_{neighbor_number}"
+                
+                # Find chunk with this ID
+                for chunk in self.chunks:
+                    if chunk.chunk_id == neighbor_id:
+                        neighbors.append(chunk)
+                        break
+                        
+        except (ValueError, IndexError) as e:
+            logger.debug(f"Could not parse chunk ID {target_chunk.chunk_id}: {e}")
+        
+        return neighbors
     
     def search_parsed_query(
         self, 
         parsed_query: ParsedQuery,
         top_k: int = config.TOP_K_RESULTS,
-        threshold: float = config.SIMILARITY_THRESHOLD
+        threshold: float = config.SIMILARITY_THRESHOLD,
+        include_neighbors: bool = True,
+        neighbor_range: int = 1
     ) -> List[Tuple[DocumentChunk, float]]:
         """
         Perform semantic search using a parsed query.
@@ -194,6 +283,8 @@ class SemanticRetriever:
             parsed_query: ParsedQuery object
             top_k: Number of top results to return
             threshold: Minimum similarity threshold
+            include_neighbors: Whether to include neighboring chunks
+            neighbor_range: Number of neighboring chunks to include on each side
             
         Returns:
             List of (DocumentChunk, similarity_score) tuples
@@ -223,7 +314,7 @@ class SemanticRetriever:
             enhanced_query = " ".join(query_components)
         
         logger.info(f"Searching with enhanced query: {enhanced_query}")
-        return self.search(enhanced_query, top_k, threshold)
+        return self.search(enhanced_query, top_k, threshold, include_neighbors, neighbor_range)
     
     def get_context_window(
         self, 
