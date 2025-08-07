@@ -100,13 +100,20 @@ async def startup_event():
         ingestion = DocumentIngestion()
         embedder = EmbeddingGenerator(model_type="huggingface")  # Use HuggingFace by default
         storage = EmbeddingStorage()
-        parser = QueryParser(use_llm=bool(config.OPENAI_API_KEY))
+        
+        # Check for either Azure OpenAI or OpenAI credentials
+        has_llm_access = bool(
+            (config.AZURE_OPENAI_API_KEY and config.AZURE_OPENAI_ENDPOINT) or 
+            config.OPENAI_API_KEY
+        )
+        
+        parser = QueryParser(use_llm=has_llm_access)
         retriever = SemanticRetriever(embedder)
         
-        if config.OPENAI_API_KEY:
+        if has_llm_access:
             reasoner = LLMReasoner()
         else:
-            logger.warning("OpenAI API key not found. LLM reasoning will be disabled.")
+            logger.warning("Neither Azure OpenAI nor OpenAI API credentials found. LLM reasoning will be disabled.")
             reasoner = None
         
         # Try to load existing index

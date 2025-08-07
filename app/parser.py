@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, List, Union
 from dataclasses import dataclass
 from enum import Enum
 
-import openai
+from openai import AzureOpenAI, OpenAI
 from loguru import logger
 
 import config
@@ -71,6 +71,23 @@ class QueryParser:
             use_llm: Whether to use LLM for advanced parsing
         """
         self.use_llm = use_llm
+        
+        # Initialize Azure OpenAI client if using LLM
+        if self.use_llm:
+            if config.AZURE_OPENAI_API_KEY and config.AZURE_OPENAI_ENDPOINT:
+                self.client = AzureOpenAI(
+                    api_key=config.AZURE_OPENAI_API_KEY,
+                    api_version=config.AZURE_OPENAI_API_VERSION,
+                    azure_endpoint=config.AZURE_OPENAI_ENDPOINT
+                )
+                self.model_name = config.AZURE_OPENAI_DEPLOYMENT_NAME
+            elif config.OPENAI_API_KEY:
+                # Fallback to regular OpenAI
+                self.client = OpenAI(api_key=config.OPENAI_API_KEY)
+                self.model_name = config.OPENAI_MODEL
+            else:
+                logger.warning("No LLM API key found, falling back to regex parsing")
+                self.use_llm = False
         
         # Regex patterns for common extractions
         self.patterns = {
@@ -302,8 +319,8 @@ class QueryParser:
         """
         
         try:
-            response = openai.chat.completions.create(
-                model=config.OPENAI_MODEL,
+            response = self.client.chat.completions.create(
+                model=self.model_name,
                 messages=[
                     {"role": "system", "content": "You are an expert at extracting structured information from insurance and medical queries. Always respond with valid JSON."},
                     {"role": "user", "content": prompt}
