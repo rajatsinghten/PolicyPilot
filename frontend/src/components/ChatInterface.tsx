@@ -3,6 +3,8 @@ import axios from 'axios';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 import StatusIndicator from './StatusIndicator';
+import FileUpload from './FileUpload';
+import DocumentList from './DocumentList';
 import './ChatInterface.css';
 
 export interface Message {
@@ -37,11 +39,18 @@ export interface ApiResponse {
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const ChatInterface: React.FC = () => {
+interface ChatInterfaceProps {}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [documentTrigger, setDocumentTrigger] = useState(0);
+  const [isDocumentListCollapsed, setIsDocumentListCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [backendStatus, setBackendStatus] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  const [documentsRefresh, setDocumentsRefresh] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -64,7 +73,7 @@ const ChatInterface: React.FC = () => {
       id: 'welcome',
       content: `👋 **Welcome to PolicyPilot Assistant!**
 
-I'm your AI-powered insurance policy assistant with **enhanced context retrieval**. 
+I'm your AI-powered insurance policy assistant with **enhanced context retrieval** and **integrated document management**.
 
 🔍 **What I can do:**
 - Analyze your insurance policies with comprehensive context
@@ -72,9 +81,16 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
 - Answer questions about claims, exclusions, and benefits
 - Provide enhanced results using neighboring document sections
 
+� **Document Management:**
+- **Upload documents directly**: Click "Upload Docs" to add PDF, DOCX, or TXT files
+- **Instant processing**: Documents are automatically processed and indexed
+- **Real-time queries**: Ask questions about uploaded documents immediately
+- **Document management**: View and delete uploaded documents as needed
+
 🚀 **Enhanced Features:**
-- **Context-Aware Search**: When I find relevant information, I also include surrounding text for complete context
-- **Comprehensive Coverage**: Get fuller answers with related policy sections
+- **Context-Aware Search**: Complete context with neighboring document sections
+- **Drag & Drop Upload**: Easy document upload with progress tracking
+- **Live Document List**: See all your uploaded documents at a glance
 - **Smart Document Analysis**: AI-powered understanding of insurance terminology
 
 💡 **Try asking:**
@@ -82,7 +98,7 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
 - "What are the exclusions for pre-existing conditions?"
 - "What's the coverage for emergency procedures?"
 
-Upload your policy documents via the backend API, then ask me anything! I'll provide detailed, contextual answers.`,
+**Get started**: Upload your policy documents using the "Upload Docs" button above, then ask me anything!`,
       isUser: false,
       timestamp: new Date()
     };
@@ -197,15 +213,80 @@ Upload your policy documents via the backend API, then ask me anything! I'll pro
     handleSendMessage(query);
   };
 
+  const handleUploadSuccess = (filename: string, chunks: number) => {
+    const successMessage = `✅ **Document uploaded successfully!**
+
+📄 **File**: ${filename}  
+📊 **Processed**: ${chunks} text chunks created  
+🔍 **Status**: Ready for queries  
+
+You can now ask questions about this document!`;
+    
+    addMessage(successMessage, false);
+    setDocumentsRefresh(prev => prev + 1); // Refresh document list
+    setShowUpload(false); // Hide upload area after success
+  };
+
+  const handleUploadError = (error: string) => {
+    const errorMessage = `❌ **Upload failed**
+
+**Error**: ${error}
+
+Please try again with a supported file format (PDF, DOCX, TXT) under 50MB.`;
+    
+    addMessage(errorMessage, false);
+  };
+
+  const handleDocumentDelete = (filename: string) => {
+    const deleteMessage = `🗑️ **Document removed**
+
+**File**: ${filename} has been deleted from the system.
+
+The document is no longer available for queries.`;
+    
+    addMessage(deleteMessage, false);
+    setDocumentsRefresh(prev => prev + 1); // Refresh document list
+  };
+
   return (
     <div className="chat-interface">
       <StatusIndicator isOnline={isOnline} status={backendStatus} />
       
       <div className="chat-container">
         <div className="chat-header">
-          <h1>🛡️ PolicyPilot Assistant</h1>
-          <p>Ask questions about your insurance policies and claims</p>
+          <div className="header-content">
+            <h1>🛡️ PolicyPilot Assistant</h1>
+            <p>Ask questions about your insurance policies and claims</p>
+          </div>
+          <div className="header-actions">
+            <button
+              className={`upload-toggle-btn ${showUpload ? 'active' : ''}`}
+              onClick={() => setShowUpload(!showUpload)}
+              title="Upload Documents"
+            >
+              📄 {showUpload ? 'Hide Upload' : 'Upload Docs'}
+            </button>
+          </div>
         </div>
+
+        {showUpload && (
+          <div className="upload-section">
+            <FileUpload
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              disabled={isLoading || !isOnline}
+              apiBaseUrl={API_BASE_URL}
+            />
+          </div>
+        )}
+
+        <DocumentList
+          apiBaseUrl={API_BASE_URL}
+          onDocumentDelete={handleDocumentDelete}
+          refreshTrigger={documentsRefresh}
+          isCollapsed={isDocumentListCollapsed}
+          onToggleCollapse={() => setIsDocumentListCollapsed(!isDocumentListCollapsed)}
+        />
 
         <MessageList 
           messages={messages}

@@ -92,7 +92,9 @@ After starting:
 📄 **Multi-format Support**: PDF, DOCX, TXT document processing  
 🔗 **Neighbor-Enhanced Retrieval**: Automatically includes surrounding chunks for better context  
 ⚡ **Real-time Chat Interface**: Interactive UI for natural language queries  
-🛡️ **Insurance-Focused**: Specialized for policy analysis and claims processing  
+� **Drag & Drop Upload**: Upload documents directly in the chat interface  
+📚 **Document Management**: View, manage, and delete uploaded documents  
+�🛡️ **Insurance-Focused**: Specialized for policy analysis and claims processing  
 
 ### 🆕 Enhanced Context Retrieval
 
@@ -101,6 +103,20 @@ PolicyPilot now includes **neighboring chunks** when finding relevant content:
 - Provides complete context around relevant sections
 - Configurable neighbor range (±1, ±2, etc.)
 - Smart deduplication prevents duplicate results
+
+### 📄 Integrated Document Management
+
+**Upload & Process Documents:**
+- **Drag & Drop Interface**: Drop PDF, DOCX, or TXT files directly in chat
+- **Instant Processing**: Documents automatically processed and indexed
+- **Visual Feedback**: Upload progress and processing confirmation
+- **File Validation**: Type and size checking with clear error messages
+
+**Document Library:**
+- **Live Document List**: See all uploaded documents with metadata
+- **Document Details**: File size, chunk count, upload date
+- **Easy Management**: Delete documents with confirmation dialog
+- **Auto-refresh**: UI updates automatically after operations
 
 ## 📋 Available Scripts
 
