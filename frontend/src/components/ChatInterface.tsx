@@ -68,41 +68,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = () => {
   }, []);
 
   useEffect(() => {
-    // Add welcome message
-    const welcomeMessage: Message = {
-      id: 'welcome',
-      content: `👋 **Welcome to PolicyPilot Assistant!**
-
-I'm your AI-powered insurance policy assistant with **enhanced context retrieval** and **integrated document management**.
-
- **What I can do:**
-- Analyze your insurance policies with comprehensive context
-- Find relevant coverage information with surrounding details
-- Answer questions about claims, exclusions, and benefits
-- Provide enhanced results using neighboring document sections
-
-**Document Management:**
-- **Upload documents directly**: Click "Upload Docs" to add PDF, DOCX, or TXT files
-- **Instant processing**: Documents are automatically processed and indexed
-- **Real-time queries**: Ask questions about uploaded documents immediately
-- **Document management**: View and delete uploaded documents as needed
-
-**Enhanced Features:**
-- **Context-Aware Search**: Complete context with neighboring document sections
-- **Drag & Drop Upload**: Easy document upload with progress tracking
-- **Live Document List**: See all your uploaded documents at a glance
-- **Smart Document Analysis**: AI-powered understanding of insurance terminology
-
- **Try asking:**
-- "What dental treatments are covered?"
-- "What are the exclusions for pre-existing conditions?"
-- "What's the coverage for emergency procedures?"
-
-**Get started**: Upload your policy documents using the "Upload Docs" button above, then ask me anything!`,
-      isUser: false,
-      timestamp: new Date()
-    };
-    setMessages([welcomeMessage]);
+    // No welcome message - clean start
   }, []);
 
   const checkAPIHealth = async () => {
@@ -128,31 +94,10 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
   };
 
   const formatBotResponse = (data: ApiResponse): string => {
-    let responseText = `**Decision**: ${data.decision}\n\n`;
+    let responseText = `${data.reasoning}\n\n`;
     
-    if (data.reasoning) {
-      responseText += `**Analysis**: ${data.reasoning}\n\n`;
-    }
-
     if (data.justification && data.justification.clauses && data.justification.clauses.length > 0) {
-      responseText += `**Relevant Policy Information** (with neighboring context):\n\n`;
-      data.justification.clauses.forEach((clause, index) => {
-        const preview = clause.text.length > 300 ? 
-          clause.text.substring(0, 300) + "..." : 
-          clause.text;
-        
-        responseText += `**${index + 1}. ${clause.source}** - *${clause.section || 'Section Unknown'}*\n`;
-        responseText += ` **Relevance**: ${Math.round(clause.relevance_score * 100)}%\n\n`;
-        responseText += `${preview}\n\n`;
-        responseText += `---\n\n`;
-      });
-    }
-
-    if (data.recommendations && data.recommendations.length > 0) {
-      responseText += `**💡 Recommendations**:\n`;
-      data.recommendations.forEach((rec, index) => {
-        responseText += `${index + 1}. ${rec}\n`;
-      });
+      responseText += `**Source**: ${data.justification.clauses[0].source}`;
     }
 
     return responseText;
@@ -174,7 +119,7 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
     try {
       const response = await axios.post(`${API_BASE_URL}/process`, {
         query: query,
-        use_llm_reasoning: false,
+        use_llm_reasoning: true,
         top_k: 5,
         include_neighbors: true,
         neighbor_range: 1
@@ -185,11 +130,7 @@ I'm your AI-powered insurance policy assistant with **enhanced context retrieval
       const data: ApiResponse = response.data;
       const formattedResponse = formatBotResponse(data);
 
-      addMessage(formattedResponse, false, {
-        confidence: data.confidence,
-        processing_time: data.processing_time || 0,
-        retrieved_chunks: data.retrieved_chunks || 0
-      });
+      addMessage(formattedResponse, false);
 
     } catch (error) {
       console.error('Query processing failed:', error);

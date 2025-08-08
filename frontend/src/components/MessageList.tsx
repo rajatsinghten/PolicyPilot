@@ -26,23 +26,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, onExampl
 
   return (
     <div className="message-list">
-      {messages.length === 1 && (
-        <div className="example-queries">
-          <h3>💡 Try these example queries:</h3>
-          <div className="example-query-buttons">
-            {exampleQueries.map((query, index) => (
-              <button
-                key={index}
-                className="example-query-button"
-                onClick={() => onExampleQuery(query)}
-                disabled={isLoading}
-              >
-                {query}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {messages.map((message) => (
         <div key={message.id} className={`message ${message.isUser ? 'message-user' : 'message-bot'}`}>
@@ -54,15 +38,6 @@ const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, onExampl
             />
             <div className="message-info">
               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              {message.metadata?.confidence && (
-                <span> • Confidence: {Math.round(message.metadata.confidence * 100)}%</span>
-              )}
-              {message.metadata?.processing_time && (
-                <span> • {message.metadata.processing_time.toFixed(1)}s</span>
-              )}
-              {message.metadata?.retrieved_chunks && (
-                <span> • {message.metadata.retrieved_chunks} chunks</span>
-              )}
             </div>
           </div>
         </div>
