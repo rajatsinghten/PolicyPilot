@@ -1,27 +1,41 @@
 # PolicyPilot - AI-Powered Insurance Policy Assistant
 
-A complete full-stack RAG (Retrieval Augmented Generation) system with FastAPI backend and React frontend for processing insurance documents and answering policy-related queries using AI.
+A sophisticated full-stack RAG (Retrieval Augmented Generation) system with FastAPI backend and React frontend for intelligent insurance policy analysis and claims processing.
 
-## 🏗️ Project Structure
+## 🎯 Overview
+
+PolicyPilot is an AI-powered assistant that helps users understand insurance policies, check coverage, and get intelligent answers to policy-related questions. It uses advanced RAG technology with Azure OpenAI for natural language understanding and decision-making.
+
+## ✨ Key Features
+
+🔍 **Intelligent RAG System**: Advanced retrieval with context-aware search  
+🧠 **Azure OpenAI Integration**: GPT-4 powered reasoning and analysis  
+📄 **Multi-format Document Support**: PDF, DOCX, TXT processing  
+🎨 **Beautiful Modern UI**: Glass morphism design with smooth animations  
+⚡ **Real-time Chat Interface**: Interactive natural language queries  
+📤 **Drag & Drop Upload**: Seamless document upload experience  
+📚 **Document Management**: View, manage, and delete uploaded documents  
+🛡️ **Insurance-Focused**: Specialized for policy analysis and claims processing  
+🔗 **Context-Aware Retrieval**: Includes neighboring chunks for complete context  
+
+## 🏗️ Architecture
 
 ```
 PolicyPilot/
 ├── backend/                # FastAPI Backend
 │   ├── app/
 │   │   ├── api.py         # FastAPI endpoints
-│   │   ├── ingestion.py   # Document processing
-│   │   ├── embedder.py    # Text embeddings
-│   │   ├── parser.py      # Query parsing
-│   │   ├── retriever.py   # Semantic search
-│   │   └── reasoner.py    # LLM reasoning
+│   │   ├── ingestion.py   # Document processing & chunking
+│   │   ├── embedder.py    # Text embeddings (Azure OpenAI/HuggingFace)
+│   │   ├── parser.py      # Query parsing & understanding
+│   │   ├── retriever.py   # Semantic search with FAISS
+│   │   └── reasoner.py    # LLM reasoning & decision making
 │   ├── data/
 │   │   ├── documents/     # Upload documents here
-│   │   └── embeddings/    # Vector storage
-│   ├── venv/              # Python virtual environment
+│   │   └── embeddings/    # Vector storage (auto-generated)
 │   ├── config.py          # System configuration
 │   ├── main.py            # CLI interface
-│   ├── requirements.txt   # Python dependencies
-│   └── .env               # Environment variables
+│   └── requirements.txt   # Python dependencies
 ├── frontend/               # React Frontend
 │   ├── src/
 │   │   ├── components/    # React components
@@ -36,8 +50,17 @@ PolicyPilot/
 
 ## 🚀 Quick Start
 
-### Option 1: One-Command Setup (Recommended)
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- Azure OpenAI API key (optional, for enhanced reasoning)
+
+### One-Command Setup (Recommended)
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/PolicyPilot.git
+cd PolicyPilot
+
 # Install all dependencies and start both services
 npm run install
 npm run dev
@@ -49,13 +72,13 @@ This will:
 - Install all Node.js dependencies in `frontend/`
 - Start both backend (port 8000) and frontend (port 3000)
 
-### Option 2: Manual Setup
+### Manual Setup
 
 #### Backend Setup
 ```bash
 cd backend
 python3 -m venv venv
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
@@ -70,7 +93,7 @@ npm install
 # Terminal 1 - Backend
 cd backend
 source venv/bin/activate
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn app.api:app --reload --host 0.0.0.0 --port 8000
 
 # Terminal 2 - Frontend
 cd frontend
@@ -85,56 +108,30 @@ After starting:
 - **API Documentation**: http://localhost:8000/docs
 - **ReDoc**: http://localhost:8000/redoc
 
-## ✨ Key Features
+## 🔧 Configuration
 
-🔍 **Semantic Search**: AI-powered document search using vector embeddings  
-🧠 **RAG Processing**: Retrieval Augmented Generation for intelligent responses  
-📄 **Multi-format Support**: PDF, DOCX, TXT document processing  
-🔗 **Neighbor-Enhanced Retrieval**: Automatically includes surrounding chunks for better context  
-⚡ **Real-time Chat Interface**: Interactive UI for natural language queries  
-� **Drag & Drop Upload**: Upload documents directly in the chat interface  
-📚 **Document Management**: View, manage, and delete uploaded documents  
-�🛡️ **Insurance-Focused**: Specialized for policy analysis and claims processing  
+### Environment Variables (.env)
+Create a `.env` file in the `backend/` directory:
 
-### 🆕 Enhanced Context Retrieval
+```env
+# Azure OpenAI Configuration (for enhanced reasoning)
+AZURE_OPENAI_API_KEY=your-azure-openai-api-key
+AZURE_OPENAI_ENDPOINT=https://your-resource.cognitiveservices.azure.com/
+AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment-name
 
-PolicyPilot now includes **neighboring chunks** when finding relevant content:
-- When a match is found at chunk 15, also retrieves chunks 14 and 16
-- Provides complete context around relevant sections
-- Configurable neighbor range (±1, ±2, etc.)
-- Smart deduplication prevents duplicate results
+# API Configuration
+API_HOST=0.0.0.0
+API_PORT=8000
 
-### 📄 Integrated Document Management
-
-**Upload & Process Documents:**
-- **Drag & Drop Interface**: Drop PDF, DOCX, or TXT files directly in chat
-- **Instant Processing**: Documents automatically processed and indexed
-- **Visual Feedback**: Upload progress and processing confirmation
-- **File Validation**: Type and size checking with clear error messages
-
-**Document Library:**
-- **Live Document List**: See all uploaded documents with metadata
-- **Document Details**: File size, chunk count, upload date
-- **Easy Management**: Delete documents with confirmation dialog
-- **Auto-refresh**: UI updates automatically after operations
-
-## 📋 Available Scripts
-
-From the root directory:
-```bash
-npm run dev              # Start both backend and frontend
-npm run backend          # Start only backend
-npm run frontend         # Start only frontend
-npm run backend:install  # Install Python dependencies
-npm run frontend:install # Install Node.js dependencies
-npm run install          # Install all dependencies
-npm run frontend:build   # Build frontend for production
-npm run clean            # Clean all dependencies and cache
+# RAG Settings
+CHUNK_SIZE=500
+TOP_K_RESULTS=5
+SIMILARITY_THRESHOLD=0.3
 ```
 
 ## 📡 API Endpoints
 
-### Core Endpoints for Frontend Integration
+### Core Endpoints
 
 #### 1. Health Check
 ```http
@@ -148,18 +145,18 @@ POST /process
 Content-Type: application/json
 
 {
-  "query": "What are the exclusions in health insurance?",
-  "top_k": 5,
-  "use_llm_reasoning": false
+  "query": "What are the dental coverage benefits?",
+  "use_llm_reasoning": true,
+  "top_k": 5
 }
 ```
 
 **Response Format**:
 ```json
 {
-  "decision": "Pending",
+  "decision": "Insufficient Information",
   "confidence": 0.7,
-  "reasoning": "Found relevant policy information...",
+  "reasoning": "The query does not specify the type of dental treatment...",
   "justification": {
     "clauses": [
       {
@@ -170,23 +167,17 @@ Content-Type: application/json
       }
     ]
   },
-  "recommendations": ["Manual review recommended"],
+  "recommendations": ["Provide specific details..."],
   "query_understanding": {
-    "age": 46,
-    "gender": "Male",
-    "procedure": "knee surgery"
+    "age": null,
+    "gender": null,
+    "procedure": "dental treatment"
   },
-  "processing_time": 2.5
+  "processing_time": 4.2
 }
 ```
 
-#### 3. Document Search
-```http
-GET /search/{query}?top_k=5
-```
-Direct document search without reasoning.
-
-#### 4. Upload Document
+#### 3. Upload Document
 ```http
 POST /upload
 Content-Type: multipart/form-data
@@ -194,23 +185,31 @@ Content-Type: multipart/form-data
 file: [PDF/DOCX/TXT file]
 ```
 
-#### 5. List Documents
+#### 4. List Documents
 ```http
 GET /documents
 ```
-Returns all uploaded documents and their statistics.
 
-#### 6. Delete Document
+#### 5. Delete Document
 ```http
 DELETE /documents/{document_name}
 ```
 
-## 🎯 Frontend Integration Examples
+## 🎯 Usage Examples
 
-### JavaScript/TypeScript
+### Query Types
+The system can handle various insurance-related queries:
+
+- **Coverage Questions**: "What dental treatments are covered?"
+- **Exclusions**: "What are the policy exclusions?"
+- **Claims**: "46M, knee surgery, Mumbai, coverage amount?"
+- **Benefits**: "What are the maternity benefits?"
+- **Waiting Periods**: "What are the waiting periods for pre-existing conditions?"
+
+### Frontend Integration
 
 ```javascript
-// Process a query
+// Process a query with LLM reasoning
 async function processQuery(query) {
   const response = await fetch('http://localhost:8000/process', {
     method: 'POST',
@@ -219,7 +218,7 @@ async function processQuery(query) {
     },
     body: JSON.stringify({
       query: query,
-      use_llm_reasoning: false,
+      use_llm_reasoning: true,
       top_k: 5
     })
   });
@@ -237,172 +236,119 @@ async function uploadDocument(file) {
   });
   return await response.json();
 }
-
-// Get system health
-async function getHealth() {
-  const response = await fetch('http://localhost:8000/health');
-  return await response.json();
-}
 ```
 
-### React Hook Example
+## 📋 Available Scripts
 
-```tsx
-import { useState } from 'react';
-
-interface QueryResult {
-  decision: string;
-  confidence: number;
-  reasoning: string;
-  justification: {
-    clauses: Array<{
-      text: string;
-      source: string;
-      relevance_score: number;
-    }>;
-  };
-  processing_time: number;
-}
-
-export const usePolicyPilot = () => {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<QueryResult | null>(null);
-  
-  const processQuery = async (query: string) => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:8000/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query, 
-          use_llm_reasoning: false,
-          top_k: 5 
-        })
-      });
-      const data = await response.json();
-      setResult(data);
-    } catch (error) {
-      console.error('Query processing failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { processQuery, loading, result };
-};
+From the root directory:
+```bash
+npm run dev              # Start both backend and frontend
+npm run backend          # Start only backend
+npm run frontend         # Start only frontend
+npm run backend:install  # Install Python dependencies
+npm run frontend:install # Install Node.js dependencies
+npm run install          # Install all dependencies
+npm run frontend:build   # Build frontend for production
+npm run clean            # Clean all dependencies and cache
 ```
 
-## 📋 Query Examples
+## 🔧 Development
 
-The system can handle various types of insurance queries:
+### Backend Development
+```bash
+cd backend
+source venv/bin/activate
 
-- **Coverage Questions**: "What dental treatments are covered?"
-- **Exclusions**: "What are the policy exclusions?"
-- **Claims**: "46M, knee surgery, Mumbai, coverage amount?"
-- **Benefits**: "What are the maternity benefits?"
-- **Waiting Periods**: "What are the waiting periods for pre-existing conditions?"
+# Start with auto-reload
+python -m uvicorn app.api:app --reload
 
-## 🔧 Configuration
-
-### Environment Variables (.env)
-```env
-# Optional: OpenAI API Key for enhanced reasoning
-OPENAI_API_KEY=your-openai-api-key
-
-# API Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
-
-# RAG Settings
-CHUNK_SIZE=500
-TOP_K_RESULTS=5
-SIMILARITY_THRESHOLD=0.3
+# CLI operations
+python main.py ingest --path data/documents/
+python main.py query --query "your question"
+python main.py status
 ```
 
-## � Project Structure
-
-```
-PolicyPilot/
-├── app/
-│   ├── api.py              # FastAPI endpoints
-│   ├── ingestion.py        # Document processing
-│   ├── embedder.py         # Text embeddings
-│   ├── parser.py           # Query parsing
-│   ├── retriever.py        # Semantic search
-│   └── reasoner.py         # LLM reasoning
-├── data/
-│   ├── documents/          # Upload documents here
-│   └── embeddings/         # Vector storage (auto-generated)
-├── config.py               # System configuration
-├── main.py                 # CLI interface
-└── requirements.txt        # Python dependencies
+### Frontend Development
+```bash
+cd frontend
+npm start          # Start development server
+npm run build      # Build for production
+npm test           # Run tests
 ```
 
-## � Error Handling
+## 🎨 UI Features
 
-The API returns standard HTTP status codes:
+### Modern Design
+- **Glass Morphism**: Semi-transparent containers with backdrop blur
+- **Smooth Animations**: Fade-in effects and hover interactions
+- **Gradient Backgrounds**: Beautiful purple-blue gradients
+- **Responsive Layout**: Works on desktop and mobile
 
-- `200` - Success
-- `400` - Bad Request (invalid query/file)
-- `404` - Not Found (no relevant documents)
-- `429` - Rate Limit Exceeded (OpenAI quota)
-- `500` - Internal Server Error
+### Interactive Elements
+- **Real-time Chat**: Instant message display with typing indicators
+- **Document Upload**: Drag & drop with progress feedback
+- **Status Indicators**: Live backend connection status
+- **Hover Effects**: Enhanced button and input interactions
 
-Example error response:
-```json
-{
-  "detail": "No relevant information found for the query"
-}
-```
+## 🔒 Security
 
-## 🔄 CORS Configuration
+- **Environment Variables**: API keys stored securely in `.env` files
+- **CORS Configuration**: Properly configured for development
+- **Input Validation**: File type and size validation
+- **Error Handling**: Graceful error responses
 
-The API is configured with CORS enabled for frontend development:
-
-```python
-# Already configured in app/api.py
-allow_origins=["*"]
-allow_methods=["*"]
-allow_headers=["*"]
-```
-
-For production, update CORS settings to specific domains.
-
-## � Performance Notes
+## 📊 Performance
 
 - **Document Processing**: ~1-2 seconds per document
-- **Query Processing**: ~2-5 seconds per query
+- **Query Processing**: ~2-5 seconds per query (with LLM reasoning)
 - **Concurrent Requests**: Supported via FastAPI async
 - **File Size Limit**: 50MB per document
 - **Supported Formats**: PDF, DOCX, TXT
 
-## �️ Development Commands
+## 🐛 Troubleshooting
 
-```bash
-# Start development server with auto-reload
-python -m uvicorn app.api:app --reload
+### Common Issues
 
-# Process documents via CLI
-python main.py ingest --path data/documents/
+1. **Backend Connection Failed**
+   - Check if backend is running on port 8000
+   - Verify virtual environment is activated
+   - Check API health at http://localhost:8000/health
 
-# Test query via CLI
-python main.py query --query "your question"
+2. **LLM Reasoning Not Working**
+   - Verify Azure OpenAI credentials in `.env`
+   - Check API endpoint and deployment name
+   - Ensure sufficient API quota
 
-# Check system status
-python main.py status
-```
+3. **Document Upload Fails**
+   - Check file format (PDF, DOCX, TXT only)
+   - Verify file size (max 50MB)
+   - Check backend logs for errors
 
-## 🔗 Additional Resources
+### Error Codes
+- `200` - Success
+- `400` - Bad Request (invalid query/file)
+- `404` - Not Found (no relevant documents)
+- `500` - Internal Server Error
 
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🔗 Links
+
+- **Live Demo**: [Add your demo link]
 - **API Documentation**: http://localhost:8000/docs
-- **OpenAI Documentation**: https://platform.openai.com/docs
-- **FastAPI Documentation**: https://fastapi.tiangolo.com/
-
-## 📞 Support
-
-For API issues or integration questions, check the `/health` endpoint first to verify system status.
+- **Azure OpenAI**: https://azure.microsoft.com/services/openai/
+- **FastAPI**: https://fastapi.tiangolo.com/
 
 ---
 
-**Ready to integrate!** Start with the `/health` endpoint to test connectivity, then use `/process` for your main RAG queries.
+**Ready to use!** Start with the health check endpoint to verify connectivity, then upload documents and start asking questions about your insurance policies.
