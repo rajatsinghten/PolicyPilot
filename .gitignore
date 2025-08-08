@@ -65,4 +65,5 @@ problem-statement.md
 
 # Temporary files
 *.tmp
-*.temp
+*.temp.env
+.env.backup
