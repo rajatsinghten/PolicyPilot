@@ -24,7 +24,7 @@ EMBEDDINGS_DIR.mkdir(exist_ok=True)
 AZURE_OPENAI_API_KEY: Optional[str] = os.getenv("AZURE_OPENAI_API_KEY")
 AZURE_OPENAI_ENDPOINT: Optional[str] = os.getenv("AZURE_OPENAI_ENDPOINT") 
 AZURE_OPENAI_DEPLOYMENT_NAME: str = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "temp-gpt-4o-mini")
-AZURE_OPENAI_API_VERSION: str = "2025-01-01-preview"
+AZURE_OPENAI_API_VERSION: str = "2024-12-01-preview"
 EMBEDDING_MODEL: str = "text-embedding-ada-002"
 
 # Legacy OpenAI Configuration (for backward compatibility)
