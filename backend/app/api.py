@@ -200,6 +200,10 @@ async def upload_document(
                 detail="Failed to extract content from document"
             )
         
+        # Update chunk sources to use original filename instead of temp filename
+        for chunk in chunks:
+            chunk.source = file.filename
+        
         # Generate embeddings
         embedded_chunks = embedder.embed_chunks(chunks)
         
@@ -275,9 +279,16 @@ async def process_query(request: QueryRequest):
         )
         
         if not retrieved_chunks:
+            # Check if documents exist at all
+            all_chunks = storage.load_embeddings()
+            if not all_chunks:
+                raise HTTPException(
+                    status_code=400,
+                    detail="No documents have been uploaded or indexed. Please upload documents first."
+                )
             raise HTTPException(
                 status_code=404,
-                detail="No relevant information found for the query"
+                detail="No relevant information found for the query. Try uploading more comprehensive documents or asking a different question."
             )
         
         # Create context

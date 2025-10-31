@@ -4,9 +4,10 @@ import './DocumentList.css';
 
 interface Document {
   name: string;
-  size: number;
   chunks: number;
-  uploaded_at: string;
+  estimated_tokens?: number;
+  size?: number;
+  uploaded_at?: string;
 }
 
 interface DocumentListProps {
@@ -138,7 +139,12 @@ const DocumentList: React.FC<DocumentListProps> = ({
                 </div>
                 <div className="document-meta">
                   <span className="chunks">{doc.chunks} chunks</span>
-                  <span className="size">{formatFileSize(doc.size)}</span>
+                  {doc.estimated_tokens && (
+                    <span className="tokens">~{(doc.estimated_tokens / 1000).toFixed(1)}k tokens</span>
+                  )}
+                  {doc.size && (
+                    <span className="size">{formatFileSize(doc.size)}</span>
+                  )}
                   {doc.uploaded_at && (
                     <span className="date">{formatDate(doc.uploaded_at)}</span>
                   )}

@@ -301,7 +301,7 @@ class SemanticRetriever:
         if parsed_query.age:
             query_components.append(f"age {parsed_query.age}")
         
-        if parsed_query.gender:
+        if parsed_query.gender and parsed_query.gender.value.lower() != "unknown":
             query_components.append(parsed_query.gender.value.lower())
         
         if parsed_query.location:
